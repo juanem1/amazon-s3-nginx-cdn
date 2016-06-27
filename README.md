@@ -1,5 +1,5 @@
-# Amazon S3 Proxy
-Serve amazon s3 public files from own server with ssl
+# Configure Nginx as CDN with Amazon S3 in your own server and ssl
+
 
 ```
 server {
