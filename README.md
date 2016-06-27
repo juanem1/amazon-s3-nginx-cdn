@@ -32,47 +32,44 @@ server {
 	location = /403.html    { access_log off; log_not_found off; }
 	location = /404.html    { access_log off; log_not_found off; }
 	location = /500.html    { access_log off; log_not_found off; }
+	
+	# Proxy configuration
+	proxy_http_version     1.1;
+	proxy_ignore_headers   'Set-Cookie';
+	proxy_buffering        off;
+	proxy_intercept_errors on;
+	proxy_method           GET;
+	proxy_set_header       Host 'bucket.s3-website-sa-east-1.amazonaws.com';
+	proxy_set_header       Authorization '';
+	proxy_hide_header      x-amz-id-2;
+	proxy_hide_header      x-amz-request-id;
+	proxy_hide_header      Set-Cookie;
+	resolver               172.16.0.23 valid=300s;
+	resolver_timeout       5s;
 
 	# cache.appcache, your document html and data
 	location ~* \.(?:manifest|appcache|html?|xml|json)$ {
 		expires -1;
-		try_files $uri @s3;
+		proxy_pass http://bucket.s3-website-sa-east-1.amazonaws.com;
 	}
 
 	# Media: images, icons, video, audio, HTC
 	location ~* \.(?:jpg|jpeg|gif|png|ico|cur|gz|svg|svgz|mp4|ogg|ogv|webm|htc)$ {
 		expires 1M;
 		add_header Cache-Control "public";
-		try_files $uri @s3;
+		proxy_pass http://bucket.s3-website-sa-east-1.amazonaws.com;
 	}
 
 	# CSS and Javascript
 	location ~* \.(?:css|js)$ {
 		expires 1y;
-		try_files $uri @s3;
+		proxy_pass http://bucket.s3-website-sa-east-1.amazonaws.com;
 	}
 
 	# WebFonts
 	location ~* \.(?:ttf|ttc|otf|eot|woff|woff2)$ {
-		expires 1M;
-		try_files $uri @s3;
-	}
-
-	# Main proxy config
-	location @s3 {
-		proxy_http_version     1.1;
-		proxy_set_header       Host 'bucket.s3-website-sa-east-1.amazonaws.com';
-		proxy_set_header       Authorization '';
-		proxy_hide_header      x-amz-id-2;
-		proxy_hide_header      x-amz-request-id;
-		proxy_hide_header      Set-Cookie;
-		proxy_ignore_headers   'Set-Cookie';
-		proxy_buffering        off;
-		proxy_intercept_errors on;
-		proxy_method           GET;
-		resolver               172.16.0.23 valid=300s;
-		resolver_timeout       5s;
-		proxy_pass             http://bucket.s3-website-sa-east-1.amazonaws.com;
+		expires    1M;
+		proxy_pass http://bucket.s3-website-sa-east-1.amazonaws.com;
 	}
 
 }
